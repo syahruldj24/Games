@@ -446,6 +446,15 @@ details[open].card > summary::after { transform: rotate(-135deg); }
   box-shadow: 0 14px 24px -10px rgba(0, 0, 0, .5);
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
+.lw { flex: 1; min-width: 0; text-align: center; line-height: 1.15; }
+.lw small { display: block; font: 600 11.5px/1 var(--f-body); white-space: nowrap; color: var(--muted); }
+.lw b { display: block; margin-top: 4px; font: 600 15px/1.15 var(--f-display); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Kembang api emas */
+.fwdim { position: fixed; inset: 0; z-index: 70; pointer-events: none; opacity: 0; transition: opacity .4s;
+  background: radial-gradient(ellipse at 50% 40%, rgba(24, 20, 48, .55), rgba(6, 9, 28, .74)); }
+.fwdim.on { opacity: 1; }
+.fw { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 71; pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
@@ -587,6 +596,7 @@ details[open].card > summary::after { transform: rotate(-135deg); }
       <section class="card" aria-labelledby="hKlas">
         <div class="ch">
           <h2 id="hKlas">Klasemen</h2>
+          <div class="lw" id="lastWin" hidden></div>
           <button class="btn sm" id="endBtn" type="button">Akhiri sesi</button>
         </div>
         <ol class="stand" id="standings"></ol>
@@ -828,6 +838,13 @@ details[open].card > summary::after { transform: rotate(-135deg); }
   function miniChip(k, label, n) {
     return '<span class="mc ' + kcls(k) + (n ? '' : ' zero') + '" title="' + label + '"><i>' + sym(k) + '</i>' + n + '</span>';
   }
+  function lastWinner() {
+    for (var g = state.games.length - 1; g >= 0; g--) {
+      var idx = state.games[g].slice(0, N).indexOf('1');
+      if (idx !== -1) return { i: idx, n: g + 1 };
+    }
+    return null;
+  }
   function renderStandings() {
     var t = totals(), c = counts();
     var order = [];
@@ -845,6 +862,11 @@ details[open].card > summary::after { transform: rotate(-135deg); }
         '<div class="mini">' + miniChip('s', 'Bintang', c.s[i]) + miniChip('1', 'Juara 1', c['1'][i]) + miniChip('x', 'Tanda silang', c.x[i]) + '</div></div>' +
         '<span class="tot ' + (t[i] < 0 ? 'neg' : '') + '">' + fmt(t[i]) + '</span></li>';
     }).join('');
+    var lw = lastWinner(), lwEl = $('#lastWin');
+    if (lw) {
+      lwEl.hidden = false;
+      lwEl.innerHTML = '<small>Juara 1 terakhir</small><b title="Game ke-' + lw.n + '">' + esc(nameOf(lw.i)) + '</b>';
+    } else { lwEl.hidden = true; lwEl.innerHTML = ''; }
     $('#sub').textContent = hasGames ? state.games.length + ' game tercatat' : 'Belum ada game';
   }
   function renderRecords() {
@@ -1125,6 +1147,123 @@ details[open].card > summary::after { transform: rotate(-135deg); }
     b.setAttribute('aria-label', 'Ganti tema. Saat ini: ' + TLABEL[theme].slice(2));
   }
 
+  /* ---------- Kembang api emas (ketuk ★) : 5 detik, 3 tahap ---------- */
+  var FW = (function () {
+    var DUR = 5000, FLIGHT = 480;
+    var GOLD = ['#ffd84d', '#ffc21a', '#ffe9a0', '#fff6d0', '#f2b50f'];
+    var cv, cx, dim, W, H, sc = 1, raf = 0, t0 = 0, last = 0, dimOff = false;
+    var plan = [], rockets = [], parts = [], flash = null;
+    function rnd(a, b) { return a + Math.random() * (b - a); }
+    function setup() {
+      if (cv) return;
+      dim = document.createElement('div'); dim.className = 'fwdim'; dim.setAttribute('aria-hidden', 'true');
+      cv = document.createElement('canvas'); cv.className = 'fw'; cv.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(dim); document.body.appendChild(cv);
+      cx = cv.getContext('2d');
+      window.addEventListener('resize', function () { if (raf) size(); });
+    }
+    function size() {
+      var d = Math.min(window.devicePixelRatio || 1, 2);
+      W = window.innerWidth; H = window.innerHeight;
+      cv.width = Math.round(W * d); cv.height = Math.round(H * d);
+      cx.setTransform(d, 0, 0, d, 0, 0);
+      sc = Math.max(.65, Math.min(1.3, Math.min(W, H) / 600));
+    }
+    function add(stage, at, x, y, n, spd, life, extra) {
+      plan.push({ stage: stage, launch: at - FLIGHT, at: at, x: x, y: y, n: n, spd: spd,
+        life: Math.min(life, DUR - at - 30), extra: extra, done: false });
+    }
+    function buildPlan() {
+      var i, t;
+      plan = [];
+      /* Tahap 1: tiga ledakan kecil */
+      t = [500, 800, 1100];
+      for (i = 0; i < 3; i++) add(1, t[i], (.2 + .3 * i + rnd(-.04, .04)) * W, rnd(.2, .42) * H, 34, 3.6, 1000, 0);
+      /* Tahap 2: empat ledakan sedang berlapis */
+      t = [1950, 2200, 2450, 2700];
+      for (i = 0; i < 4; i++) add(2, t[i], (.15 + .23 * i + rnd(-.04, .04)) * W, rnd(.2, .45) * H, 58, 5, 1250, 2);
+      /* Tahap 3: puncak, ledakan besar di tengah + pengiring */
+      add(3, 3550, W * .5, H * .34, 120, 6.4, 1400, 3);
+      add(3, 3700, W * .2, H * .3, 70, 5.2, 1200, 2);
+      add(3, 3750, W * .8, H * .3, 70, 5.2, 1200, 2);
+      add(3, 3950, W * .35, H * .2, 60, 5.6, 1050, 0);
+      add(3, 4000, W * .65, H * .2, 60, 5.6, 1000, 0);
+    }
+    function ring(b, n, spd, life, tw) {
+      for (var k = 0; k < n; k++) {
+        var a = (k / n) * Math.PI * 2 + rnd(-.08, .08), s = spd * sc * rnd(.55, 1);
+        parts.push({ x: b.x, y: b.y, px: b.x, py: b.y, vx: Math.cos(a) * s, vy: Math.sin(a) * s,
+          age: 0, life: life * rnd(.75, 1), sz: tw ? 1.2 : rnd(1.4, 2.4), c: GOLD[(Math.random() * GOLD.length) | 0], tw: tw });
+      }
+    }
+    function burst(b, el) {
+      ring(b, b.n, b.spd, b.life, false);
+      if (b.extra & 2) ring(b, Math.round(b.n * .55), b.spd * .5, b.life * .9, false);
+      if (b.extra & 1) { ring(b, 60, b.spd * 1.1, b.life, true); flash = { x: b.x, y: b.y, t: el }; }
+    }
+    function frame(now) {
+      var el = now - t0, dt = Math.max(0, Math.min(now - last, 50)), f = dt / 16.67, i, p, r, a;
+      last = now;
+      if (el >= DUR) { stop(); return; }
+      if (!dimOff && el > DUR - 450) { dimOff = true; dim.classList.remove('on'); }
+      cx.globalCompositeOperation = 'destination-out';
+      cx.fillStyle = 'rgba(0,0,0,.2)'; cx.fillRect(0, 0, W, H);
+      cx.globalCompositeOperation = 'lighter';
+      cx.lineCap = 'round';
+      for (i = 0; i < plan.length; i++) {
+        p = plan[i];
+        if (!p.done && el >= p.launch) { p.done = true; rockets.push({ p: p, x0: p.x + rnd(-30, 30), px: p.x, py: H }); }
+      }
+      for (i = rockets.length - 1; i >= 0; i--) {
+        r = rockets[i];
+        var k = (el - r.p.launch) / FLIGHT;
+        if (k >= 1) { burst(r.p, el); rockets.splice(i, 1); continue; }
+        var x = r.x0 + (r.p.x - r.x0) * k, y = H + (r.p.y - H) * (1 - (1 - k) * (1 - k));
+        if (k < 0.02) { r.px = x; r.py = y; }
+        cx.globalAlpha = .9; cx.strokeStyle = '#fff1b8'; cx.lineWidth = 2.4;
+        cx.beginPath(); cx.moveTo(r.px, r.py); cx.lineTo(x, y); cx.stroke();
+        r.px = x; r.py = y;
+      }
+      for (i = parts.length - 1; i >= 0; i--) {
+        p = parts[i]; p.age += dt;
+        if (p.age >= p.life) { parts.splice(i, 1); continue; }
+        var dr = Math.pow(.965, f);
+        p.vx *= dr; p.vy = p.vy * dr + .05 * sc * f;
+        p.px = p.x; p.py = p.y; p.x += p.vx * f; p.y += p.vy * f;
+        a = Math.pow(1 - p.age / p.life, 1.4);
+        if (p.tw && Math.random() < .5) a *= .35;
+        cx.strokeStyle = p.c; cx.lineWidth = p.sz * 3; cx.globalAlpha = a * .3;
+        cx.beginPath(); cx.moveTo(p.px, p.py); cx.lineTo(p.x, p.y); cx.stroke();
+        cx.lineWidth = p.sz; cx.globalAlpha = a;
+        cx.beginPath(); cx.moveTo(p.px, p.py); cx.lineTo(p.x, p.y); cx.stroke();
+      }
+      if (flash) {
+        a = 1 - (el - flash.t) / 450;
+        if (a > 0) {
+          var g = cx.createRadialGradient(flash.x, flash.y, 0, flash.x, flash.y, 300 * sc);
+          g.addColorStop(0, 'rgba(255,226,122,1)'); g.addColorStop(1, 'rgba(255,200,60,0)');
+          cx.globalAlpha = a * .09; cx.fillStyle = g; cx.fillRect(0, 0, W, H);
+        } else flash = null;
+      }
+      cx.globalAlpha = 1;
+      raf = requestAnimationFrame(frame);
+    }
+    function stop() {
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0; rockets = []; parts = []; plan = []; flash = null;
+      if (cx) cx.clearRect(0, 0, W, H);
+      if (dim) dim.classList.remove('on');
+    }
+    function start() {
+      if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      setup(); stop(); size(); buildPlan(); dimOff = false;
+      dim.classList.add('on');
+      t0 = performance.now(); last = t0;
+      raf = requestAnimationFrame(frame);
+    }
+    return { start: start };
+  })();
+
   /* ---------- Render & init ---------- */
   function renderAll() { renderStandings(); renderRecords(); renderArchive(); renderHistory(); buildInput(); }
 
@@ -1140,6 +1279,7 @@ details[open].card > summary::after { transform: rotate(-135deg); }
     var i = +b.closest('.prow').dataset.p, v = b.dataset.v;
     draft[i] = draft[i] === v ? null : v;
     save(); updateInput();
+    if (v === 's' && draft[i] === 's') FW.start();
   });
   $('#saveBtn').addEventListener('click', saveGame);
   $('#clearBtn').addEventListener('click', function () {
