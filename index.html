@@ -466,6 +466,10 @@ details[open].card > summary::after { transform: rotate(-135deg); }
 .fwname .fwstar { display: block; font-size: 26px; line-height: 1; color: #ffd84d; text-shadow: 0 0 14px rgba(255, 194, 26, .9); }
 .fwname .fwlab { display: block; margin-top: 6px; font: 700 13px/1 var(--f-display); letter-spacing: .24em; text-transform: uppercase; color: #ffd84d; }
 .fwname .fwlab:empty { display: none; }
+.fwname.poop { border-color: #b9783c; box-shadow: 0 0 0 4px rgba(185, 120, 60, .18), 0 0 38px rgba(150, 90, 40, .55), 0 18px 40px rgba(0, 0, 0, .5); }
+.fwname.poop .fwstar { font-size: 40px; text-shadow: none; }
+.fwname.poop .fwlab { color: #e8b27a; }
+.fwname.poop b { background: linear-gradient(180deg, #ffe2bf, #c98a4b); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .fwname b { display: block; margin-top: 6px; font: 700 clamp(30px, 9vw, 48px)/1.1 var(--f-display);
   overflow-wrap: anywhere; background: linear-gradient(180deg, #fff6d0, #ffc21a); -webkit-background-clip: text; background-clip: text; color: transparent; }
 @keyframes fwpop {
@@ -851,13 +855,15 @@ details[open].card > summary::after { transform: rotate(-135deg); }
     var c = { '1': [], s: [], x: [] };
     Object.keys(c).forEach(function (k) { for (var i = 0; i < MAXN; i++) c[k].push(0); });
     state.games.forEach(function (g) { g.forEach(function (p, i) { if (p && c[p]) c[p][i]++; }); });
-    /* Terbawah: poin terendah di satu game; yang poinnya sama dengan yang paling bawah juga dihitung terbawah */
+    /* Terbawah: hanya pemegang juara (bukan ★ / - / ×) yang poinnya sama dengan juara terakhir (posisi ke-N).
+       Juara lain dengan poin yang sama dengan posisi terakhir tetap dihitung terbawah. */
     c.b = []; for (var q = 0; q < MAXN; q++) c.b.push(0);
+    var lowPts = state.pts[String(N)];
     state.games.forEach(function (g) {
-      var pts = [], lo = Infinity, hi = -Infinity, i;
-      for (i = 0; i < N; i++) { pts.push(g[i] ? state.pts[g[i]] : null); if (pts[i] !== null) { lo = Math.min(lo, pts[i]); hi = Math.max(hi, pts[i]); } }
-      if (lo === Infinity || lo === hi) return;
-      for (i = 0; i < N; i++) if (pts[i] === lo) c.b[i]++;
+      for (var i = 0; i < N; i++) {
+        var p = g[i];
+        if (p && !isMark(p) && state.pts[p] <= lowPts) c.b[i]++;
+      }
     });
     return c;
   }
@@ -1050,13 +1056,17 @@ details[open].card > summary::after { transform: rotate(-135deg); }
         var rank = 1; for (var j = 0; j < N; j++) if (t[j] > t[i]) rank++;
         return { name: nameOf(i), total: t[i], rank: rank };
       });
+      var mb = 0, lo = [], li;
+      for (li = 0; li < N; li++) if (c.b[li] > mb) mb = c.b[li];
+      if (mb > 0) for (li = 0; li < N; li++) if (c.b[li] === mb) lo.push(nameOf(li));
+      var losers = lo.join(' & ');
       state.archive.push({ ts: Date.now(), games: n, rows: rows });
       while (state.archive.length > ARCH_MAX) state.archive.shift();   /* simpan 3 terbaru, yang terlama otomatis terhapus */
       state.games = [];
       draft = draft.map(function () { return null; });
       save(); renderAll();
       toast('Klasemen sesi ini tersimpan');
-      FW.start(rows.filter(function (r) { return r.rank === 1; }).map(function (r) { return r.name; }).join(' & '), 'end');
+      FW.start(rows.filter(function (r) { return r.rank === 1; }).map(function (r) { return r.name; }).join(' & '), 'end', losers);
     });
   }
   function delArchive(idx) {
@@ -1188,7 +1198,7 @@ details[open].card > summary::after { transform: rotate(-135deg); }
       end: { dur: 10000, icon: '\uD83C\uDFC6', label: 'Juara sesi', jokers: true, big: true, voiceGain: 2.2,
         starts: [200, 1000, 1800, 2600, 3400, 4200, 5000, 5800, 6700, 6750, 6800, 6850, 7600, 8100, 8600] }
     };
-    var M = MODES.star, DUR = M.dur;
+    var M = MODES.star, DUR = M.dur, P1 = DUR, loser = '', swapped = false;
     var COLORS = ['#ff4d6d', '#ffd84d', '#4dd2ff', '#7dffb0', '#c77dff', '#ff9f43', '#5b8cff', '#ff6bd6'];
     var PATTERN = ['L', 'R', 'T', 'R', 'L', 'T'];
     var SUITS = ['\u2660', '\u2665', '\u2666', '\u2663'];
@@ -1276,6 +1286,16 @@ details[open].card > summary::after { transform: rotate(-135deg); }
       c.strokeStyle = '#1b2142'; c.lineWidth = 1.2; c.lineCap = 'round'; c.beginPath(); c.arc(X(0), Y(8.5), 6 * u, .15 * Math.PI, .85 * Math.PI); c.stroke();
       return { cv: s, w: w, h: h };
     }
+    /* Emoji untuk fase "terbawah terbanyak" */
+    function makeEmoji(ch) {
+      var sz = Math.round(rnd(34, 54) * sc), w = Math.round(sz * 1.35), s = document.createElement('canvas');
+      s.width = Math.round(w * dpr); s.height = Math.round(w * dpr);
+      var c = s.getContext('2d'); c.scale(dpr, dpr);
+      c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.font = sz + 'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",system-ui,sans-serif';
+      c.fillText(ch, w / 2, w / 2 + sz * .06);
+      return { cv: s, w: w, h: w };
+    }
     function buildCards() {
       var i, n = M.jokers ? Math.round(clamp(W * H / 5200, 70, 120)) : Math.round(clamp(W * H / 9000, 36, 64)), side, s, e, sp;
       sprites = []; for (i = 0; i < 14; i++) sprites.push(M.jokers ? makeJoker() : makeSprite());
@@ -1289,8 +1309,24 @@ details[open].card > summary::after { transform: rotate(-135deg); }
         else s = { x: -sp.w, y: rnd(.05, .95) * H };
         e = { x: rnd(.08, .92) * W, y: rnd(.08, .92) * H };
         cards.push({ sp: sp, sx: s.x, sy: s.y, ex: e.x, ey: e.y,
-          start: rnd(0, DUR * .58), fly: rnd(650, 1000),
+          start: rnd(0, P1 * .58), end: P1, fly: rnd(650, 1000),
           r0: rnd(-Math.PI, Math.PI), spin: rnd(2.5, 5) * (Math.random() < .5 ? -1 : 1), r1: rnd(-.7, .7) });
+      }
+      if (loser) {
+        var EM = ['\uD83D\uDCA9', '\uD83D\uDCA9', '\uD83D\uDCA9', '\uD83D\uDCA9', '\uD83E\uDD23', '\uD83D\uDE02', '\uD83E\uDD22', '\uD83E\uDD2E', '\uD83E\uDD21'], sp2 = [];
+        for (i = 0; i < 18; i++) sp2.push(makeEmoji(pick(EM)));
+        n = Math.round(clamp(W * H / 6500, 55, 95));
+        for (i = 0; i < n; i++) {
+          side = i % 4; sp = sp2[(Math.random() * sp2.length) | 0];
+          if (side === 0) s = { x: rnd(.05, .95) * W, y: -sp.h };
+          else if (side === 1) s = { x: W + sp.w, y: rnd(.05, .95) * H };
+          else if (side === 2) s = { x: rnd(.05, .95) * W, y: H + sp.h };
+          else s = { x: -sp.w, y: rnd(.05, .95) * H };
+          e = { x: rnd(.06, .94) * W, y: rnd(.06, .94) * H };
+          cards.push({ sp: sp, sx: s.x, sy: s.y, ex: e.x, ey: e.y,
+            start: P1 + rnd(0, 2800), end: DUR, fly: rnd(650, 1000),
+            r0: rnd(-Math.PI, Math.PI), spin: rnd(1.5, 3.5) * (Math.random() < .5 ? -1 : 1), r1: rnd(-.5, .5) });
+        }
       }
     }
 
@@ -1473,12 +1509,51 @@ details[open].card > summary::after { transform: rotate(-135deg); }
       g.gain.setValueAtTime(.3, t + .75); g.gain.exponentialRampToValueAtTime(.0001, t + 2.1);
       s.connect(h); h.connect(g); g.connect(master);
     }
+    /* Fase 2: "boooohh" penonton + banyak orang tertawa ngakak (disintesis) */
+    function boo(t, dur, f0, vol) {
+      var o = AC.createOscillator(), o2 = AC.createOscillator(), lf = AC.createOscillator(), lg = AC.createGain(),
+          fa = AC.createBiquadFilter(), fb = AC.createBiquadFilter(), g = AC.createGain();
+      o.type = 'sawtooth'; o2.type = 'sawtooth';
+      o.frequency.setValueAtTime(f0 * 1.12, t); o.frequency.exponentialRampToValueAtTime(f0 * .8, t + dur);
+      o2.frequency.setValueAtTime(f0 * 1.125, t); o2.frequency.exponentialRampToValueAtTime(f0 * .805, t + dur);
+      lf.frequency.value = rnd(4.5, 6.5); lg.gain.value = f0 * .025;
+      lf.connect(lg); lg.connect(o.frequency); lg.connect(o2.frequency);
+      fa.type = 'bandpass'; fa.frequency.value = 330; fa.Q.value = 4;
+      fb.type = 'bandpass'; fb.frequency.value = 780; fb.Q.value = 5;
+      g.gain.setValueAtTime(.0001, t); g.gain.linearRampToValueAtTime(vol, t + .3);
+      g.gain.setValueAtTime(vol, t + dur * .6); g.gain.linearRampToValueAtTime(.0001, t + dur);
+      o.connect(fa); o2.connect(fa); o.connect(fb); o2.connect(fb); fa.connect(g); fb.connect(g); g.connect(master);
+      o.start(t); o2.start(t); lf.start(t); o.stop(t + dur + .05); o2.stop(t + dur + .05); lf.stop(t + dur + .05);
+      srcs.push(o, o2, lf);
+    }
+    function laugh(t, f0, vol, n) {
+      var vow = pick([[750, 1250], [650, 1100], [550, 1800]]), o = AC.createOscillator(), f1 = AC.createBiquadFilter(),
+          f2 = AC.createBiquadFilter(), g = AC.createGain(), iv = rnd(.15, .2), k, tk, a, fr;
+      o.type = 'sawtooth';
+      f1.type = 'bandpass'; f1.frequency.value = vow[0]; f1.Q.value = 5;
+      f2.type = 'bandpass'; f2.frequency.value = vow[1]; f2.Q.value = 6;
+      o.connect(f1); o.connect(f2); f1.connect(g); f2.connect(g); g.connect(master);
+      g.gain.setValueAtTime(.0001, t);
+      for (k = 0; k < n; k++) {
+        tk = t + k * iv; a = vol * Math.pow(.92, k) * rnd(.8, 1.1); fr = f0 * (1 - .035 * k) * rnd(.97, 1.03);
+        o.frequency.setValueAtTime(fr, tk); o.frequency.exponentialRampToValueAtTime(fr * .92, tk + iv * .8);
+        g.gain.setValueAtTime(.0001, tk); g.gain.linearRampToValueAtTime(a, tk + .025); g.gain.exponentialRampToValueAtTime(.0001, tk + iv * .85);
+      }
+      o.start(t); o.stop(t + n * iv + .1); srcs.push(o);
+    }
+    function phase2(noise, T2, L2) {
+      var i, n;
+      crowd(noise, T2, L2, .7);
+      for (i = 0; i < 14; i++) boo(T2 + rnd(0, .8), rnd(1.6, 2.2), rnd(100, 190), rnd(.06, .1));
+      for (i = 0; i < 9; i++) boo(T2 + rnd(2, 2.8), rnd(1.4, 2), rnd(100, 200), rnd(.05, .09));
+      for (i = 0; i < 18; i++) { n = 5 + ((Math.random() * 5) | 0); laugh(T2 + rnd(.7, 3.1), rnd(190, 400), rnd(.05, .1), n); }
+    }
     function audioStart(mode) {
       if (!ensureAC()) return;
       try {
         if (AC.state === 'suspended') AC.resume();
         var vb = bufs[mode], vd = vb ? vb.duration : (mode === 'end' ? 6.94 : 2.47);
-        var T = AC.currentTime + .03, sr = AC.sampleRate, D = DUR / 1000, at = vd - .12, L = D - at;
+        var T = AC.currentTime + .03, sr = AC.sampleRate, D = DUR / 1000, D1 = P1 / 1000, at = vd - .12, L = D1 - at;
         var noise = makeNoise(sr, 6), clap = makeApplause(sr, L), i, rk, cs, cg, vs, vg, boost = M.big ? 1.2 : 1;
         master = AC.createGain(); comp = AC.createDynamicsCompressor();
         master.gain.setValueAtTime(1, T); master.gain.setValueAtTime(1, T + D - .8); master.gain.linearRampToValueAtTime(.0001, T + D);
@@ -1491,6 +1566,8 @@ details[open].card > summary::after { transform: rotate(-135deg); }
         for (i = 0; i < Math.round(L * 2.4 * boost); i++) cheer(T + at + rnd(.05, Math.max(.2, L - 1.3)), rnd(.6, 1.2), rnd(180, 420), rnd(.05, .11) * boost);
         /* 3) khusus akhir sesi: fanfare kemenangan singkat */
         if (M.label) fanfare(noise, T + at + .15);
+        /* fase 2: terbawah terbanyak, booooh + tawa ngakak */
+        if (loser) phase2(noise, T + D1, D - D1);
         /* desing & ledakan roket hanya setelah audio pengguna selesai, supaya tidak menimpa */
         for (i = 0; i < rockets.length; i++) {
           rk = rockets[i];
@@ -1515,17 +1592,23 @@ details[open].card > summary::after { transform: rotate(-135deg); }
       last = now;
       if (el >= DUR) { stop(); return; }
       if (!dimOff && el > DUR - 500) { dimOff = true; dim.classList.remove('on'); }
+      if (loser && !swapped && el >= P1) {
+        swapped = true;
+        iconEl.textContent = '\uD83D\uDCA9'; labEl.textContent = 'Paling sering terbawah'; nameEl.textContent = loser;
+        pop.classList.add('poop'); pop.style.animationDuration = (DUR - P1) + 'ms';
+        pop.classList.remove('on'); void pop.offsetWidth; pop.classList.add('on');
+      }
       cx.clearRect(0, 0, W, H); cx2.clearRect(0, 0, W, H);
       /* kartu */
       for (i = 0; i < cards.length; i++) {
         c = cards[i];
         k = (el - c.start) / c.fly;
-        if (k <= 0) continue;
+        if (k <= 0 || el > c.end) continue;
         if (k > 1) k = 1;
         e = ease(k);
         x = c.sx + (c.ex - c.sx) * e; y = c.sy + (c.ey - c.sy) * e;
         rot = c.r0 + c.spin * (1 - e) * Math.PI + c.r1 * e;
-        a = el > DUR - 650 ? Math.max(0, (DUR - el) / 650) : 1;
+        a = el > c.end - 650 ? Math.max(0, (c.end - el) / 650) : 1;
         cx.globalAlpha = a;
         cx.save(); cx.translate(x, y); cx.rotate(rot);
         cx.drawImage(c.sp.cv, -c.sp.w / 2, -c.sp.h / 2, c.sp.w, c.sp.h);
@@ -1569,13 +1652,14 @@ details[open].card > summary::after { transform: rotate(-135deg); }
       if (pop) pop.classList.remove('on');
       audioStop();
     }
-    function start(name, mode) {
+    function start(name, mode, lose) {
       if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       mode = mode === 'end' ? 'end' : 'star';
-      M = MODES[mode]; DUR = M.dur;
+      M = MODES[mode]; DUR = M.dur; P1 = DUR; loser = (mode === 'end' && lose) ? lose : ''; swapped = false;
+      if (loser) DUR = P1 + 5000;
       setup(); stop(); size();
       iconEl.textContent = M.icon; labEl.textContent = M.label; nameEl.textContent = name;
-      pop.style.animationDuration = DUR + 'ms';
+      pop.classList.remove('poop'); pop.style.animationDuration = P1 + 'ms';
       pop.classList.remove('on'); void pop.offsetWidth; pop.classList.add('on');
       buildCards(); buildRockets(); dimOff = false;
       dim.classList.add('on');
