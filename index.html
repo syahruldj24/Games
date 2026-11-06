@@ -14,7 +14,7 @@
 <link rel="apple-touch-icon" href="icon-192.png?v=8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Permanent+Marker&display=swap" rel="stylesheet">
 <script>
 /* Terapkan tema lebih awal supaya tidak berkedip */
 (function () {
@@ -474,7 +474,7 @@ details[open].card > summary::after { transform: rotate(-135deg); }
   overflow-wrap: anywhere; background: linear-gradient(180deg, #fff6d0, #ffc21a); -webkit-background-clip: text; background-clip: text; color: transparent; }
 /* Adegan akhir: juara & terbawah terbanyak berdampingan, tutup dengan ketukan */
 .fwfin { position: fixed; inset: 0; z-index: 72; background: radial-gradient(ellipse at 50% 45%, rgba(14, 16, 42, .45), rgba(6, 9, 28, .72)); display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 16px; padding: 24px 14px; opacity: 0; pointer-events: none; transition: opacity .5s; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  gap: 16px; padding: clamp(74px, 14vw, 120px) clamp(36px, 9vw, 96px); opacity: 0; pointer-events: none; transition: opacity .5s; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .fwfin.on { opacity: 1; pointer-events: auto; }
 .fwfin .fwhead { text-shadow: 0 2px 10px rgba(0, 0, 0, .6); font: 700 14px/1 var(--f-display); letter-spacing: .3em; text-transform: uppercase; color: rgba(255, 255, 255, .85); }
 .fwfin .fwrow { display: flex; gap: 12px; width: 100%; max-width: 560px; align-items: stretch; justify-content: center; }
@@ -505,6 +505,66 @@ details[open].card > summary::after { transform: rotate(-135deg); }
   88% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
   100% { opacity: 0; transform: translate(-50%, -50%) scale(.92); }
 }
+
+/* Tulisan grafiti: KEPROK / ATUH (ketuk bintang) dan DAMN!!! (akhiri sesi) */
+.fwsay, .dm { position: fixed; z-index: 74; pointer-events: none; display: flex; align-items: center; justify-content: center; }
+.fwsay span, .dm span { display: block; white-space: nowrap; line-height: 1; letter-spacing: .03em; text-transform: uppercase; opacity: 0;
+  font-family: "Permanent Marker", "Rubik Spray Paint", Impact, "Arial Black", sans-serif; color: var(--c1, #ffe34d);
+  text-shadow: 3px 0 0 #14081f, -3px 0 0 #14081f, 0 3px 0 #14081f, 0 -3px 0 #14081f, 2px 2px 0 #14081f, -2px -2px 0 #14081f, 2px -2px 0 #14081f, -2px 2px 0 #14081f,
+    6px 7px 0 var(--c2, #ff2d95), 0 0 26px var(--c2, #ff2d95); }
+.fwsay { top: 0; bottom: 0; }
+.fwsay.r { right: 1.5vw; }
+.fwsay.l { left: 1.5vw; }
+.fwsay span { writing-mode: vertical-rl; font-size: clamp(44px, 15vw, 128px); }
+.fwsay.r span { --c1: #ffe34d; --c2: #ff2d95; }
+.fwsay.l span { --c1: #5dffb0; --c2: #7a2cff; transform: rotate(180deg); }
+.fwsay.on span { animation: fwslam var(--dur, 6s) ease-out var(--dl, 0s) both, fwwob .42s ease-in-out infinite alternate; }
+.fwsay.l.on span { --from: -260% 0; }
+.fwsay.r.on span { --from: 260% 0; }
+.dm { font-size: 0; }
+.dm span { font-size: clamp(40px, 13vw, 118px); }
+.dm.t { top: calc(6px + env(safe-area-inset-top)); left: 0; right: 0; --from: 0 -300%; }
+.dm.b { bottom: calc(6px + env(safe-area-inset-bottom)); left: 0; right: 0; --from: 0 300%; }
+.dm.l, .dm.r { top: 0; bottom: 0; }
+.dm.l span, .dm.r span { writing-mode: vertical-rl; font-size: clamp(28px, 8.5vw, 92px); }
+.dm.l { left: 3px; --from: -400% 0; }
+.dm.l span { transform: rotate(180deg); }
+.dm.r { right: 3px; --from: 400% 0; }
+.dm.t span { --c1: #ff4d4d; --c2: #ffd400; }
+.dm.r span { --c1: #4dd2ff; --c2: #ff2d95; }
+.dm.b span { --c1: #ffe34d; --c2: #ff3d00; }
+.dm.l span { --c1: #7dffb0; --c2: #7a2cff; }
+.dm.on span { animation: fwslamKeep .7s cubic-bezier(.2, 1.4, .4, 1) var(--dl, 0s) both, fwwob .38s ease-in-out infinite alternate; }
+@keyframes fwslam {
+  0% { opacity: 0; translate: var(--from, 0 0); scale: 2.4; }
+  8% { opacity: 1; translate: 0 0; scale: 1.22; }
+  13% { opacity: 1; translate: 0 0; scale: 1; }
+  86% { opacity: 1; translate: 0 0; scale: 1; }
+  100% { opacity: 0; translate: 0 0; scale: .9; }
+}
+@keyframes fwslamKeep {
+  0% { opacity: 0; translate: var(--from, 0 0); scale: 2.4; }
+  60% { opacity: 1; translate: 0 0; scale: 1.25; }
+  100% { opacity: 1; translate: 0 0; scale: 1; }
+}
+@keyframes fwwob { from { rotate: -3.5deg; } to { rotate: 3.5deg; } }
+/* Emotikon tepuk tangan bergerak */
+.fwclap { position: fixed; inset: 0; z-index: 74; pointer-events: none; overflow: hidden; }
+.fwclap .cl { position: absolute; line-height: 1; opacity: 0; animation: fwclapin var(--d, 5s) ease-out var(--dl, 0s) both; }
+.fwclap .cl i { display: block; font-style: normal; animation: fwclapwig .3s ease-in-out infinite alternate; }
+@keyframes fwclapin {
+  0% { opacity: 0; scale: .2; translate: 0 36px; }
+  8% { opacity: 1; scale: 1.15; translate: 0 0; }
+  13% { opacity: 1; scale: 1; translate: 0 0; }
+  82% { opacity: 1; translate: 0 -34px; }
+  100% { opacity: 0; scale: .85; translate: 0 -70px; }
+}
+@keyframes fwclapwig { from { transform: rotate(-20deg) scale(.9); } to { transform: rotate(14deg) scale(1.25); } }
+/* Emotikon metal untuk juara */
+.fwmetal, .metal { display: flex; justify-content: center; gap: 4px; margin-top: 12px; font-size: 26px; line-height: 1; }
+.fwmetal:empty, .metal:empty { display: none; }
+.fwmetal span, .metal span { display: inline-block; animation: fwmetal .45s ease-in-out infinite alternate; animation-delay: var(--i, 0s); }
+@keyframes fwmetal { from { transform: rotate(-16deg) translateY(3px); } to { transform: rotate(16deg) translateY(-4px) scale(1.18); } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
@@ -1181,6 +1241,7 @@ details[open].card > summary::after { transform: rotate(-135deg); }
     var PATTERN = ['L', 'R', 'T', 'R', 'L', 'T'];
     var SUITS = ['\u2660', '\u2665', '\u2666', '\u2663'];
     var RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+    var sayR, sayL, dmEls = [], clapBox, metalEl;
     var cv, cx, cv2, cx2, dim, pop, iconEl, labEl, nameEl, W, H, dpr = 1, sc = 1, raf = 0, t0 = 0, last = 0, dimOff = false;
     var cards = [], sparks = [], rockets = [], sprites = [];
     var AC = null, master = null, comp = null, srcs = [], bufs = { final: null, keprok: null }, finG = null;
@@ -1194,16 +1255,25 @@ details[open].card > summary::after { transform: rotate(-135deg); }
       cv = document.createElement('canvas'); cv.className = 'fw'; cv.setAttribute('aria-hidden', 'true');
       cv2 = document.createElement('canvas'); cv2.className = 'fw fw2'; cv2.setAttribute('aria-hidden', 'true');
       pop = document.createElement('div'); pop.className = 'fwname'; pop.setAttribute('aria-hidden', 'true');
-      pop.innerHTML = '<span class="fwstar"></span><small class="fwlab"></small><b></b>';
-      iconEl = pop.querySelector('.fwstar'); labEl = pop.querySelector('.fwlab'); nameEl = pop.querySelector('b');
+      pop.innerHTML = '<span class="fwstar"></span><small class="fwlab"></small><b></b><div class="fwmetal"></div>';
+      iconEl = pop.querySelector('.fwstar'); labEl = pop.querySelector('.fwlab'); nameEl = pop.querySelector('b'); metalEl = pop.querySelector('.fwmetal');
       fin = document.createElement('div'); fin.className = 'fwfin'; fin.setAttribute('role', 'button'); fin.setAttribute('aria-label', 'Tutup perayaan');
       fin.innerHTML = '<div class="fwhead">Hasil sesi</div><div class="fwrow">' +
-        '<div class="fwcard win"><span class="ico">\uD83C\uDFC6</span><small>Juara sesi</small><b></b><div class="meta"></div></div>' +
+        '<div class="fwcard win"><span class="ico">\uD83C\uDFC6</span><small>Juara sesi</small><b></b><div class="metal"></div><div class="meta"></div></div>' +
         '<div class="fwcard lose"><span class="ico">\uD83D\uDCA9</span><small>Paling lemah</small><b></b><div class="meta"></div></div></div>' +
         '<div class="fwhint">Ketuk untuk menutup</div>';
       fin.addEventListener('click', function () { stop(); });
       /* urutan: redup, kartu, popup nama, adegan akhir, lalu roket/percikan paling atas */
       document.body.appendChild(dim); document.body.appendChild(cv); document.body.appendChild(pop); document.body.appendChild(fin); document.body.appendChild(cv2);
+      /* tulisan grafiti & tepuk tangan di lapisan paling atas */
+      sayR = document.createElement('div'); sayR.className = 'fwsay r'; sayR.innerHTML = '<span>KEPROK</span>';
+      sayL = document.createElement('div'); sayL.className = 'fwsay l'; sayL.innerHTML = '<span>ATUH</span>';
+      ['t', 'r', 'b', 'l'].forEach(function (k, n) {
+        var d = document.createElement('div'); d.className = 'dm ' + k; d.innerHTML = '<span>DAMN!!!</span>'; d.style.setProperty('--dl', (n * .22) + 's'); dmEls.push(d);
+      });
+      clapBox = document.createElement('div'); clapBox.className = 'fwclap';
+      [sayR, sayL, clapBox].concat(dmEls).forEach(function (e) { e.setAttribute('aria-hidden', 'true'); document.body.appendChild(e); });
+      if (document.fonts && document.fonts.load) { try { document.fonts.load('40px "Permanent Marker"'); } catch (e) {} }
       cx = cv.getContext('2d'); cx2 = cv2.getContext('2d');
       window.addEventListener('resize', function () { if (raf) size(); });
     }
@@ -1547,10 +1617,33 @@ details[open].card > summary::after { transform: rotate(-135deg); }
       }, 150);
     }
 
+    function metalHTML(n) {
+      var h = '', i;
+      for (i = 0; i < n; i++) h += '<span style="--i:' + (i * .09).toFixed(2) + 's">\uD83E\uDD18\uD83C\uDFFB</span>';
+      return h;
+    }
+    /* Efek tambahan: star = KEPROK (kanan) + ATUH (kiri) + tepuk tangan; end = DAMN!!! di 4 sisi */
+    function fx(mode) {
+      var all = [sayR, sayL].concat(dmEls), i, h = '', x, y, sz, dl, tries;
+      all.forEach(function (e) { e.classList.remove('on'); });
+      clapBox.innerHTML = '';
+      void document.body.offsetWidth;
+      if (mode === 'end') { dmEls.forEach(function (e) { e.classList.add('on'); }); return; }
+      sayR.style.setProperty('--dl', '.05s'); sayR.style.setProperty('--dur', ((DUR - 50) / 1000) + 's');
+      sayL.style.setProperty('--dl', '.6s'); sayL.style.setProperty('--dur', ((DUR - 600) / 1000) + 's');
+      sayR.classList.add('on'); sayL.classList.add('on');
+      for (i = 0; i < 14; i++) {
+        tries = 0;
+        do { x = rnd(3, 88); y = rnd(4, 88); tries++; } while (tries < 20 && x > 22 && x < 74 && y > 34 && y < 66);
+        sz = Math.round(rnd(30, 58) * Math.max(.8, sc)); dl = rnd(0, 2.4);
+        h += '<span class="cl" style="left:' + x.toFixed(1) + '%;top:' + y.toFixed(1) + '%;font-size:' + sz + 'px;--dl:' + dl.toFixed(2) + 's;--d:' + Math.max(1.5, DUR / 1000 - dl).toFixed(2) + 's"><i style="animation-delay:-' + rnd(0, .3).toFixed(2) + 's">\uD83D\uDC4F</i></span>';
+      }
+      clapBox.innerHTML = h;
+    }
     function showFinal() {
       finalOn = true;
       var win = fin.querySelector('.win'), lose = fin.querySelector('.lose');
-      win.querySelector('b').textContent = winName;
+      win.querySelector('b').textContent = winName; win.querySelector('.metal').innerHTML = metalHTML(5);
       win.querySelector('.meta').innerHTML = info.pts ? '<i class="mk g">1</i> Poin akhir ' + info.pts : '';
       if (loser) {
         lose.hidden = false; lose.querySelector('b').textContent = loser;
@@ -1576,7 +1669,7 @@ details[open].card > summary::after { transform: rotate(-135deg); }
       if (loser && !swapped && el >= P1) {
         swapped = true;
         iconEl.textContent = '\uD83D\uDCA9'; labEl.textContent = 'Paling lemah'; nameEl.textContent = loser;
-        pop.classList.add('poop'); pop.style.animationDuration = (DUR - P1) + 'ms';
+        metalEl.innerHTML = ''; pop.classList.add('poop'); pop.style.animationDuration = (DUR - P1) + 'ms';
         pop.classList.remove('on'); void pop.offsetWidth; pop.classList.add('on');
       }
       cx.clearRect(0, 0, W, H); cx2.clearRect(0, 0, W, H);
@@ -1632,6 +1725,7 @@ details[open].card > summary::after { transform: rotate(-135deg); }
       if (dim) dim.classList.remove('on');
       if (pop) pop.classList.remove('on');
       if (fin) fin.classList.remove('on');
+      if (sayR) { sayR.classList.remove('on'); sayL.classList.remove('on'); dmEls.forEach(function (e) { e.classList.remove('on'); }); clapBox.innerHTML = ''; }
       finalOn = false;
       audioStop();
     }
@@ -1642,6 +1736,8 @@ details[open].card > summary::after { transform: rotate(-135deg); }
       if (loser) DUR = P1 + 4000;
       setup(); stop(); size();
       iconEl.textContent = M.icon; labEl.textContent = M.label; nameEl.textContent = name;
+      metalEl.innerHTML = mode === 'end' ? metalHTML(5) : '';
+      fx(mode);
       pop.classList.remove('poop'); pop.style.animationDuration = P1 + 'ms';
       pop.classList.remove('on'); void pop.offsetWidth; pop.classList.add('on');
       buildCards(); buildRockets(); dimOff = false;
