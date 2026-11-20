@@ -556,12 +556,12 @@ details[open].card > summary::after { transform: rotate(-135deg); }
   color: var(--c1, #ffe34d);
   text-shadow: 3px 0 0 #14081f, -3px 0 0 #14081f, 0 3px 0 #14081f, 0 -3px 0 #14081f, 2px 2px 0 #14081f, -2px -2px 0 #14081f, 2px -2px 0 #14081f, -2px 2px 0 #14081f,
     6px 7px 0 var(--c2, #ff2d95), 0 0 28px var(--c2, #ff2d95);
-  animation: fwpop .32s cubic-bezier(.2, 1.6, .4, 1) calc(var(--i, 0) * .09s) both; }
+  animation: fwlpop .32s cubic-bezier(.2, 1.6, .4, 1) calc(var(--i, 0) * .09s) both; }
 .fwlyr.k1 { font-size: clamp(40px, min(16vw, 22vh), 150px); --c1: #ffe9a0; --c2: #ff9f1a; }
 .fwlyr.k2 { font-size: clamp(48px, min(20vw, 26vh), 170px); --c1: #ff4d4d; --c2: #ffd400; }
 .fwlyr.k3 { font-size: clamp(40px, min(21vw, 17vh), 150px); --c1: #ffe34d; --c2: #ff3d00; }
 .fwlyr.k4 { font-size: clamp(40px, min(17vw, 30vh), 170px); --c1: #7dffb0; --c2: #7a2cff; }
-@keyframes fwpop { 0% { opacity: 0; scale: .15; } 55% { opacity: 1; scale: 1.22; } 100% { opacity: 1; scale: 1; } }
+@keyframes fwlpop { 0% { opacity: 0; scale: .15; } 55% { opacity: 1; scale: 1.22; } 100% { opacity: 1; scale: 1; } }
 /* Emotikon tepuk tangan bergerak */
 .fwclap { position: fixed; inset: 0; z-index: 74; pointer-events: none; overflow: hidden; }
 .fwclap .cl { position: absolute; line-height: 1; opacity: 0; animation: fwclapin var(--d, 5s) ease-out var(--dl, 0s) both; }
