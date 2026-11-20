@@ -121,12 +121,12 @@
 .k5 { --kc: #f3a0a6; --kc2: #e07a84; --ke: #b85560; --kfg: #5a1020; }   /* juara 5: merah pudar */
 .k6 { --kc: #ee8d96; --kc2: #d96470; --ke: #a8404c; --kfg: #52101c; }   /* merah pudar agak pekat */
 .ks { --kc: #ffe34d; --kc2: #ffc400; --ke: #b88700; --kfg: #4a3200; }   /* bintang: emas cerah */
-.kd { --kc: #ff6670; --kc2: #e8283a; --ke: #a8131f; --kfg: #ffffff; }   /* strip (-): merah */
+.kd { --kc: #f0707a; --kc2: #d9404f; --ke: #a02a36; --kfg: #ffffff; }   /* strip (-): merah */
 .kb { --kc: #b08cff; --kc2: #7648e0; --ke: #4a25a8; --kfg: #ffffff; }   /* terbawah: ungu */
-.kz { --kc: #6a6a7c; --kc2: #20202a; --ke: #0a0a10; --kfg: #ffffff; }   /* silang di atas strip: paling rendah, hitam keabuan */
+.kz { --kc: #b82234; --kc2: #8a1224; --ke: #560a16; --kfg: #ffffff; }   /* x- : merah paling pekat, deretan merah: juara 5, -, x, x- */
 .xs { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; font-size: .8em; line-height: .72; }
 .xs b { display: block; font-weight: 700; font-style: normal; }
-.kx { --kc: #c4162e; --kc2: #7e0a1b; --ke: #4a0610; --kfg: #ffffff; }   /* silang (x): merah gelap */
+.kx { --kc: #d4323f; --kc2: #b01c2e; --ke: #781220; --kfg: #ffffff; }   /* silang (x): merah gelap */
 
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
@@ -691,7 +691,7 @@ details[open].card > summary::after { transform: rotate(-135deg); }
 </svg></div>
 
 <div class="app">
-  <p class="credit">Created by ig. syahrul djihat__</p>
+  <p class="credit">Created by ig. syahruldj__</p>
   <header class="top">
     <div class="brand">
       <span class="logo" aria-hidden="true">
@@ -1219,7 +1219,7 @@ details[open].card > summary::after { transform: rotate(-135deg); }
     }
     $('#rankFields').innerHTML = activeNums().map(function (k) { return ptField(k, 'Juara ' + k); }).join('');
     $('#markFields').innerHTML =
-      ptField('s', '★ (bintang)') + ptField('d', '- (strip)') + ptField('x', '× (silang)') + ptField('z', '× di atas - (silang + strip)');
+      ptField('s', '★ (leng habis kartu)') + ptField('d', '- (efek leng)') + ptField('x', '× (mati dasar)') + ptField('z', '×- (mati dasar + efek leng)');
     syncSettings();
   }
   function syncSettings() {
