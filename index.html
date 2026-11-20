@@ -123,6 +123,9 @@
 .ks { --kc: #ffe34d; --kc2: #ffc400; --ke: #b88700; --kfg: #4a3200; }   /* bintang: emas cerah */
 .kd { --kc: #ff6670; --kc2: #e8283a; --ke: #a8131f; --kfg: #ffffff; }   /* strip (-): merah */
 .kb { --kc: #b08cff; --kc2: #7648e0; --ke: #4a25a8; --kfg: #ffffff; }   /* terbawah: ungu */
+.kz { --kc: #6a6a7c; --kc2: #20202a; --ke: #0a0a10; --kfg: #ffffff; }   /* silang di atas strip: paling rendah, hitam keabuan */
+.xs { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; font-size: .8em; line-height: .72; }
+.xs b { display: block; font-weight: 700; font-style: normal; }
 .kx { --kc: #c4162e; --kc2: #7e0a1b; --ke: #4a0610; --kfg: #ffffff; }   /* silang (x): merah gelap */
 
 * { box-sizing: border-box; }
@@ -807,15 +810,15 @@ details[open].card > summary::after { transform: rotate(-135deg); }
   var KEY = 'skor-kartu-v1';
   var TKEY = 'skor-kartu-tema';
   var NUMS = ['1', '2', '3', '4', '5', '6'];
-  var MARKS = ['s', 'd', 'x'];
+  var MARKS = ['s', 'd', 'x', 'z'];
   var VALID = NUMS.concat(MARKS);
   function activeNums() { return NUMS.slice(0, N); }
-  function keyOrder() { return ['s'].concat(activeNums(), ['d', 'x']); }
+  function keyOrder() { return ['s'].concat(activeNums(), ['d', 'x', 'z']); }
   var archOpen = false, ARCH_MAX = 3;
-  var GLYPH = { s: '★', d: '-', x: '×', b: '▼' };
+  var GLYPH = { s: '★', d: '-', x: '×', z: '×-', b: '▼' };
   var DEF = {
     players: ['Ediro', 'Radeno', 'Salamo', 'Fiqrio', 'Djo', 'Pemain 6'],
-    pts: { '1': 3, '2': 2, '3': 1, '4': 0, '5': -1, '6': -1, s: 6, d: -1, x: -2 }
+    pts: { '1': 3, '2': 2, '3': 1, '4': 0, '5': -1, '6': -1, s: 6, d: -1, x: -2, z: -3 }
   };
   var CROWN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8l4.6 4L12 5l4.4 7L21 8l-1.8 11H4.8z" fill="currentColor"/></svg>';
 
@@ -835,7 +838,7 @@ details[open].card > summary::after { transform: rotate(-135deg); }
   function sgn(n) { return n > 0 ? '+' + fmt(n) : fmt(n); }
   function nameOf(i) { var n = (state.players[i] || '').trim(); return n || 'Pemain ' + (i + 1); }
   function isMark(k) { return MARKS.indexOf(k) !== -1; }
-  function sym(k) { return GLYPH[k] || k; }
+  function sym(k) { return k === 'z' ? '<span class="xs"><b>×</b><b>-</b></span>' : (GLYPH[k] || k); }
   function kcls(k) { return 'k' + k; }
   function joinNames(a) {
     if (a.length <= 1) return a.join('');
@@ -968,7 +971,7 @@ details[open].card > summary::after { transform: rotate(-135deg); }
   /* ---------- Input game ---------- */
   function keyBtn(i, k) {
     var v = state.pts[k];
-    var label = isMark(k) ? 'tanda ' + GLYPH[k] : 'juara ' + k;
+    var label = k === 'z' ? 'tanda silang di atas strip' : isMark(k) ? 'tanda ' + GLYPH[k] : 'juara ' + k;
     return '<button type="button" class="key ' + kcls(k) + (isMark(k) ? ' mk' : '') + '" data-v="' + k + '" aria-pressed="false" ' +
       'aria-label="' + esc(nameOf(i)) + ' ' + label + ', ' + sgn(v) + ' poin">' +
       '<span class="big">' + sym(k) + '</span><span class="sm">' + sgn(v) + '</span></button>';
@@ -978,7 +981,7 @@ details[open].card > summary::after { transform: rotate(-135deg); }
     for (var i = 0; i < N; i++) {
       html += '<div class="prow" data-p="' + i + '">' +
         '<div class="phead"><span class="pname">' + esc(nameOf(i)) + '</span><span class="pbadge"></span></div>' +
-        '<div class="keys" style="--kn:' + ko.length + ';--kh:' + Math.ceil(ko.length / 2) + '">' + ko.map(function (k) { return keyBtn(i, k); }).join('') + '</div>' +
+        '<div class="keys" style="--kn:' + (ko.length <= 9 ? ko.length : Math.ceil(ko.length / 2)) + ';--kh:' + Math.ceil(ko.length / 2) + '">' + ko.map(function (k) { return keyBtn(i, k); }).join('') + '</div>' +
         '</div>';
     }
     $('#inputRows').innerHTML = html;
@@ -1012,7 +1015,7 @@ details[open].card > summary::after { transform: rotate(-135deg); }
       if (pick === null) { bd.className = 'pbadge empty'; bd.textContent = 'belum dipilih'; }
       else {
         bd.className = 'pbadge ' + kcls(pick);
-        bd.textContent = (isMark(pick) ? GLYPH[pick] + ' ' : '') + sgn(state.pts[pick]);
+        bd.innerHTML = (isMark(pick) ? sym(pick) + ' ' : '') + sgn(state.pts[pick]);
       }
     });
     var msg = $('#msg');
@@ -1216,7 +1219,7 @@ details[open].card > summary::after { transform: rotate(-135deg); }
     }
     $('#rankFields').innerHTML = activeNums().map(function (k) { return ptField(k, 'Juara ' + k); }).join('');
     $('#markFields').innerHTML =
-      ptField('s', '★ (bintang)') + ptField('d', '- (strip)') + ptField('x', '× (silang)');
+      ptField('s', '★ (bintang)') + ptField('d', '- (strip)') + ptField('x', '× (silang)') + ptField('z', '× di atas - (silang + strip)');
     syncSettings();
   }
   function syncSettings() {
